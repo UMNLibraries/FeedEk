@@ -1,12 +1,10 @@
 {
-  "name": "FeedEk-UMNLibraries version",
+  "name": "feedek-umnlibraries",
   "title": "UMNLibraries fork of FeedEk jQuery RSS/ATOM Feed Plugin",
   "description": "FeedEk is a jQuery plugin for parsing and displaying RSS and Atom feeds. You can obtain feeds easily from any domain.",
-  "version": "2.0.2+fork1.1",
-  "homepage": "https://github.com/enginkizil/FeedEk",
+  "version": "2.0.2+fork1.2",
   "author": {
-    "name": "Engin KIZIL",
-    "url": "http://www.enginkizil.com"
+    "name": "Gabe Ormsby",
   },
   "licenses": [
     {
@@ -17,9 +15,5 @@
   "dependencies": {
     "jquery": ">=1.6.2"
   },
-  "homepage": "http://jquery-plugins.net/FeedEk/FeedEk.html",
-  "demo": "http://jquery-plugins.net/FeedEk/FeedEk_demo.html",
-  "docs": "http://jquery-plugins.net/FeedEk/FeedEk.html",  
-  "download": "http://jquery-plugins.net/FeedEk/FeedEk.html",
   "keywords": ["feed", "rss", "atom", "reader", "parser", "jQuery", "plugin"]
 }

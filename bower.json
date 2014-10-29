@@ -1,6 +1,6 @@
 {
-  "name": "FeedEk-UMNLibraries",
-  "version": "2.0.2+fork1.1",
+  "name": "feedek-umnlibraries",
+  "version": "2.0.2+fork1.2",
   "main": "js/feedek.js",
   "ignore": [
     "bower.json",
@@ -10,5 +10,6 @@
   ],
   "dependencies": {
     "jquery": ">=1.6.2"
-  }
+  },
+  "private": true
 }
