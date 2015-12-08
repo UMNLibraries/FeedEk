@@ -1,7 +1,7 @@
 /*
 * FeedEk jQuery RSS/ATOM Feed Plugin v2.0
 * http://jquery-plugins.net/FeedEk/FeedEk.html  https://github.com/enginkizil/FeedEk
-* Author : Engin KIZIL http://www.enginkizil.com   
+* Author : Engin KIZIL http://www.enginkizil.com
 * Modifications by gormsby@umn.edui to address the following needs:
 * - Requesting feeds over https to avoid mixed content warnings/blocks.
 * - Breaking summary on word boundary after
@@ -10,54 +10,118 @@
 */
 
 (function ($) {
-    $.fn.FeedEk = function (opt) {
-        var def = $.extend({
-            FeedUrl: "http://rss.cnn.com/rss/edition.rss",
-            MaxCount: 5,
-            ShowDesc: true,
-            ShowPubDate: true,
-            CharacterLimit: 0,
-            TitleLinkTarget: "_blank",
-            DateFormat: "",
-            DateFormatLang:"en"
-        }, opt);
+  $.fn.FeedEk = function (opt) {
 
-        var id = $(this).attr("id"), i, s = "",dt;
-        $("#" + id).empty().append('<i class="icon-spin"></i>');
+    var def = $.extend({
+      FeedUrl: "https://www.lib.umn.edu/continuumfeed",
+      MaxCount: 5,
+      ShowDesc: true,
+      ShowPubDate: true,
+      CharacterLimit: 0,
+      TitleLinkTarget: "_blank",
+      DateFormat: "",
+      DateFormatLang:"en"
+    }, opt);
 
-        $.ajax({
-            url: "https://ajax.googleapis.com/ajax/services/feed/load?v=1.0&num=" + def.MaxCount + "&output=json&q=" + encodeURIComponent(def.FeedUrl) + "&hl=en&callback=?",
-            dataType: "json",
-            success: function (data) {
-                $("#" + id).empty();
-                $.each(data.responseData.feed.entries, function (e, item) {
-                    s += '<p><strong><a href="' + item.link + '" target="' + def.TitleLinkTarget + '" >' + item.title + "</a></strong><br />";
-                    
-                    if (def.ShowPubDate){
-                        dt= new Date(item.publishedDate);
-                        if ($.trim(def.DateFormat).length > 0) {
-                            try {
-                                moment.lang(def.DateFormatLang);
-                                s += '<div class="itemDate">' + moment(dt).format(def.DateFormat) + "</div>";
-                            }
-                            catch (e){s += '<div class="itemDate">' + dt.toLocaleDateString() + "</div>";}                            
-                        }
-                        else {
-                            s += '<div class="itemDate">' + dt.toLocaleDateString() + "</div>";
-                        }                        
-                    }
-                    if (def.ShowDesc) {
-                        if (def.DescCharacterLimit > 0 && item.content.length > def.DescCharacterLimit) {
-                            s += '<div class="itemContent">' + item.content.substr(0, def.DescCharacterLimit).split(" ").slice(0,-1).join(" ") + "...</div>";
-                        }
-                        else {
-                            s += '<div class="itemContent">' + item.content + "</div>";
-                        }
-                    }
-                    s+= '</p>';
-                });
-                $("#" + id).append(s);
-            }
-        });
-    };
-})(jQuery);
+    var id = $(this).attr("id");
+    $("#" + id).empty().append('<i class="icon-spin"></i>');
+
+    var handlePhpError = function(response_text) {
+      var json_string = response_text.substring(4, response_text.indexOf('}]);'));
+      json_string += '}]';
+      return json_string;
+    }
+
+    var newsItemHtml = function(item) {
+      var html, dt;
+
+      html =
+        '<p><strong><a href="' + item.permalink + '" target="' +
+        def.TitleLinkTarget + '" >' + item.title + "</a></strong><br />";
+
+      // Publication Date
+      if (def.ShowPubDate){
+        dt= new Date(item.date);
+        if ($.trim(def.DateFormat).length > 0) {
+          try {
+              moment.lang(def.DateFormatLang);
+              html +=
+                '<div class="itemDate">' +
+                moment(dt).format(def.DateFormat) + "</div>";
+          }
+          catch(e) {
+            html +=
+              '<div class="itemDate">' + dt.toLocaleDateString() + "</div>";
+          }
+        }
+        else {
+          html += '<div class="itemDate">' + dt.toLocaleDateString() + "</div>";
+        }
+      }
+
+      // Item Description
+      if (def.ShowDesc) {
+        if (def.DescCharacterLimit > 0 && item.excerpt.length > def.DescCharacterLimit) {
+          html +=
+            '<div class="itemContent">' +
+            item.excerpt.substr(0, def.DescCharacterLimit).split(" ").slice(0,-1).join(" ") +
+            "...</div>";
+        }
+        else {
+          html += '<div class="itemContent">' + item.excerpt + "</div>";
+        }
+      }
+
+      html += '</p>';
+
+      return html;
+    }
+
+    $.ajax({
+      // Continuum data feed
+      url: def.FeedUrl,
+      // The name of the callback parameter
+      jsonpCallback: "foo",
+      // Tell jQuery we're expecting JSONP
+      dataType: "jsonp",
+      // Cache it
+      cache: true,
+
+      // Work with the response
+      success: function(data) {
+        var news = new Array();
+        for (var i = 0; i < def.MaxCount; i++) {
+          news.push(newsItemHtml(data.responseData[i]));
+        };
+
+        if(news.length) {
+          $("#" + id).append(news.join(''));
+        }
+      },
+
+      // Handle error
+      error: function(response, error) {
+        // Expecting an error, due to PHP error within
+        // the WordPress Feed JSON output
+        var response_text,json_string,data,news;
+        response_text = response.responseText;
+        json_string = handlePhpError(response_text);
+
+        try {
+          data = JSON.parse(json_string);
+          var news = new Array();
+          for (var i = 0; i < def.MaxCount; i++) {
+            news.push(newsItemHtml(data[i]));
+          };
+
+          if(news.length) {
+            $("#" + id).append(news.join(''));
+          }
+        }
+        catch(e) {
+          console.log(e);
+        }
+      }
+    });
+
+}})(jQuery);
