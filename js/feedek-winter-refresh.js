@@ -81,7 +81,9 @@
           };
 
           if(news.length) {
-            $("#" + id).append(news.join(''));
+            $("#" + id).append(
+              '<ul class="list-group margin-top" style="padding-bottom:0px;margin-bottom:8px">' + news.join('') + "</ul>"
+            );
           }
         }
         catch(e) {
