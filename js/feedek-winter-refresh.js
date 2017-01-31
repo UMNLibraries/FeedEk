@@ -55,7 +55,7 @@
       success: function(data) {
         var news = new Array();
         for (var i = 0; i < def.MaxCount; i++) {
-          news.push(newsItemHtml(data.responseData[i]));
+          news.push(newsItemHtml(data[i]));
         };
 
         if(news.length) {
